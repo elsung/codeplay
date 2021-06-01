@@ -63,15 +63,15 @@
 
 
 .dogg{
-    width:350px;
-    height:350px;
+    width:300px;
+    height:300px;
     border-radius:100%;
     position:absolute;
     background-color:yellow;
     left:calc(50%);
     bottom:40%;
     transform:translateX(-50%);
-    background-image:url("dogg.png");
+    background-image:url("soul.gif");
     background-position: center;
     /* clip-path:polygon(-50% 0px,150% -50%,150% 55%,-50% 55%,
       -50% 62%,150% 62%,150% 70%,0 70%,
@@ -215,21 +215,31 @@
   white-space:nowrap;
 }
 .outrun{
-  /* font-family:'RoadRage'; */
+  font-family:'Montserrat';
   font-weight:normal;
-  letter-spacing: 10px;
+  letter-spacing: 14px;
   text-transform:uppercase;
-  font-size: 30px;
+  font-size: 18px;
+  opacity:0.9;
 }
 
-.presents{
-    margin-top: 20px;
+/* .presents{
+    margin-top: 16px;
     font-family:'RoadRage';
     font-style: italic;
-    font-size: 24px;
-  }
+    font-size: 20px;
+    opacity:0.8;
+  } */
+
 
 a.start{
+    position:absolute;
+    left:50%;
+    bottom:18%;
+    text-align:center;
+    transform:translate(-50%,-50%);
+    white-space:nowrap;
+
     font-family:'RoadRage';
     font-size: 80px;
     color: #FFF;

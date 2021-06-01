@@ -3,22 +3,23 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SolGlow - Presented by Conductive Research</title>
+    <title>SOLGLOW - Presented by Conductive Research</title>
     <link rel="stylesheet" href="style.css">
+    <script>
+        document.addEventListener("click", event => {
+            const audio = document.querySelector("audio");
+            audio.volume = 0.9;
+            audio.play();
+        });
+
+    </script>
 </head>
 
 
 <body>
-    
-    <iframe src="silence.mp3" allow="autoplay" id="audio" style="display: none"></iframe>
-    <div class="background-music">
-        <audio src="soulglo.mp3" autoplay>
-            <p>If you are reading this, it is because your browser does not support the audio element.     </p>
-            <embed src="soulglo.mp3" width="180" height="90" hidden="true" />
-        </audio>
 
-        <!-- <embed loop="true" src="soulglo.mp3" hidden="true" type="video/quicktime"></embed> -->
-    </div>
+    <audio src="soulglow.m4a" loop></audio>
+
     <div class="background-80s animated-clouds stars" style="--background-height:100vh">
         <!-- <div class="sun"></div> -->
         <div class="dogg"></div>
@@ -41,16 +42,18 @@
         <div class="overlay"></div>
         
         <div class="text">
-          <div class="outrun glow">Conductive Research</div>
-          <div class="presents glow">Presents</div>
+          <div class="outrun glow">Conductive Research Presents</div>
+          <!-- <div class="presents glow">Presents</div> -->
           <div class="chrome shine" data-text="SOLGLOW">SOL<span class="spark"></span>GLOW</div>
           <div></div>
-          <div>
-            <a class="start glow" href="#">Start</a>
-          </div>
+          
         </div>
-
       </div>
+
+      <div>
+        <a class="start glow" href="../menu/index.html">Start</a>
+      </div>
+
       <svg width="0" height="0">
         <filter id="filter">
         <feTurbulence type="fractalNoise" baseFrequency=".01" numOctaves="10" id="fractalNoise"/>
