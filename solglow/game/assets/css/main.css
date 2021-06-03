@@ -4218,6 +4218,11 @@ span.is-active:after {
     -webkit-backdrop-filter: blur( 4.0px );
     border-radius: 4px;
     border: 1px solid rgba(255, 255, 255, 0.17);
+    animation: none;
+}
+
+.post-card__content:hover{
+    animation: glow 1s ease-in-out infinite alternate;
 }
 
 /* ===== CUSTOM CODE START ===== */
@@ -4245,15 +4250,14 @@ span.is-active:after {
     src: url('../webfonts/CyberspaceRacewayFront-lWGD.woff') format('woff');
 }
 
-main {
-    margin-top:50px;
-    padding-top: 20px;
+.slick-slider {
     background: linear-gradient(153deg, rgba(255, 255, 255, 0.18) 0%, rgba(176, 3, 211, 0.06) 100%);
-    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.87 );
     backdrop-filter: blur( 4.0px );
     -webkit-backdrop-filter: blur( 4.0px );
-    border-top: 1px solid rgba(255, 255, 255, 0.17);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.17);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.17);
+    padding: 40px 20px 10px 20px;
 }
 
 
@@ -4285,16 +4289,20 @@ main {
   }
   
 .rom-token {
-    font-family:'Cyberspace Raceway Back';
+    /* font-family:'Cyberspace Raceway Back'; */
+    font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
     color:greenyellow;
-    font-size: 6.5px;
+    font-size: 11px;
     word-wrap: break-word;
     text-align: left;
 }
 
-.NFT-Avail{
 
-    margin-top: -50px;
+
+.NFT-Avail{
+    /* position: relative; */
+    /* margin-top: 30px; */
+    margin-bottom: 20px;
     text-align: center;
     font-family:'Stormfaze Regular';
     font-size:36px;
@@ -4308,6 +4316,7 @@ main {
 
 
 /* ===== CUSTOM CODE END ===== */
+
 
 
 
