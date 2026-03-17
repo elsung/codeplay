@@ -1,0 +1,7 @@
+{
+  "name": "codeplay",
+  "private": true,
+  "scripts": {
+    "start": "npx serve -s . -l $PORT"
+  }
+}
