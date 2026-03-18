@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(railway status:*)",
+      "Bash(railway domain:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
