@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clockwork</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+            background: #f0f0f0;
+            color: #1a1a1a;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        h1 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #999;
+        }
+
+        .add-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            background: white;
+            color: #999;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .add-btn:hover {
+            border-color: #666;
+            color: #333;
+            transform: scale(1.1);
+        }
+
+        .temp-toggle {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            user-select: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: white;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .temp-toggle:hover { border-color: #999; color: #333; background: #fafafa; }
+
+        .temp-toggle .active { font-weight: 700; color: #1a1a1a; }
+        .temp-toggle .sep { color: #ccc; }
+
+        .clocks {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .clock-card {
+            border-radius: 18px;
+            padding: 1.6rem 1.8rem 1.4rem;
+            min-width: 260px;
+            max-width: 320px;
+            flex: 1 1 260px;
+            position: relative;
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+        }
+
+        .clock-card:active { cursor: grabbing; }
+
+        .clock-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .clock-card.drag-over {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.15);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .remove-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.1);
+            color: inherit;
+            opacity: 0.4;
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s, background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .clock-card:hover .remove-btn { opacity: 0.7; }
+        .remove-btn:hover { opacity: 1 !important; background: rgba(0,0,0,0.2); }
+
+        .weather-row {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .sky-icon {
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+
+        .temp {
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0.6;
+        }
+
+        .city-name {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: 0.15rem;
+        }
+
+        .country {
+            font-size: 0.65rem;
+            opacity: 0.5;
+            margin-bottom: 1rem;
+        }
+
+        .time {
+            font-size: 2.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .ampm {
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0.6;
+            margin-left: 0.25rem;
+        }
+
+        .seconds {
+            font-size: 1.1rem;
+            font-weight: 400;
+            opacity: 0.4;
+            margin-left: 0.1rem;
+        }
+
+        .date-line {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-top: 0.7rem;
+        }
+
+        .day-line {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .day-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .day-type.workday {
+            background: rgba(0, 0, 0, 0.08);
+            color: inherit;
+        }
+
+        .day-type.weekend {
+            background: rgba(0, 0, 0, 0.12);
+            color: inherit;
+        }
+
+        .day-type-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .day-type.workday .day-type-dot { background: #22c55e; }
+        .day-type.weekend .day-type-dot { background: #f59e0b; }
+
+        /* Dark cards: white box */
+        .clock-card[data-dark="true"] .day-type.workday {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .clock-card[data-dark="true"] .day-type.weekend {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .offset {
+            font-size: 0.7rem;
+            opacity: 0.4;
+            margin-top: 0.8rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid rgba(0,0,0,0.08);
+        }
+
+        /* Day fill */
+        .day-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            border-radius: 18px 18px 0 0;
+            transition: height 60s linear;
+            pointer-events: none;
+            background: linear-gradient(
+                to bottom,
+                var(--fill-color, rgba(0,0,0,0.06)) 0%,
+                var(--fill-color, rgba(0,0,0,0.06)) calc(100% - 6px),
+                transparent 100%
+            );
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-backdrop.open { display: flex; }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 440px;
+            max-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            margin-bottom: 0.8rem;
+            font-family: inherit;
+        }
+
+        .modal input:focus { border-color: #888; }
+
+        .tz-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .tz-item {
+            padding: 0.55rem 0.7rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            transition: background 0.15s;
+        }
+
+        .tz-item:hover { background: #f5f5f5; }
+
+        .tz-item .tz-city { font-weight: 600; color: #222; }
+        .tz-item .tz-region { font-size: 0.75rem; color: #999; }
+
+        .modal-close {
+            margin-top: 0.8rem;
+            padding: 0.5rem;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-family: inherit;
+            color: #666;
+        }
+
+        .modal-close:hover { background: #e0e0e0; }
+
+        @media (max-width: 600px) {
+            .clocks { flex-direction: column; align-items: center; }
+            .clock-card { min-width: unset; width: 100%; max-width: unset; }
+            .time { font-size: 2.2rem; }
+            body { padding: 1.5rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Clockwork</h1>
+            <button class="add-btn" onclick="openModal()" title="Add city">+</button>
+        </div>
+        <div class="temp-toggle" id="temp-toggle" onclick="toggleTempUnit()" title="Toggle temperature unit"></div>
+    </div>
+    <div class="clocks" id="clocks"></div>
+
+    <div class="modal-backdrop" id="modal" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h2>Add a city</h2>
+            <input type="text" id="tz-search" placeholder="Search any city..." oninput="onSearchInput()">
+            <div class="tz-list" id="tz-list"></div>
+            <button class="modal-close" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // ── Timezone database (with lat/lon for weather) ──
+        const TZ_DB = [
+            { city: 'Tokyo', country: 'Japan', tz: 'Asia/Tokyo', lat: 35.68, lon: 139.69 },
+            { city: 'Los Angeles', country: 'United States', tz: 'America/Los_Angeles', lat: 34.05, lon: -118.24 },
+            { city: 'Barcelona', country: 'Spain', tz: 'Europe/Madrid', lat: 41.39, lon: 2.17 },
+            { city: 'New York', country: 'United States', tz: 'America/New_York', lat: 40.71, lon: -74.01 },
+            { city: 'London', country: 'United Kingdom', tz: 'Europe/London', lat: 51.51, lon: -0.13 },
+            { city: 'Paris', country: 'France', tz: 'Europe/Paris', lat: 48.86, lon: 2.35 },
+            { city: 'Berlin', country: 'Germany', tz: 'Europe/Berlin', lat: 52.52, lon: 13.41 },
+            { city: 'Sydney', country: 'Australia', tz: 'Australia/Sydney', lat: -33.87, lon: 151.21 },
+            { city: 'Melbourne', country: 'Australia', tz: 'Australia/Melbourne', lat: -37.81, lon: 144.96 },
+            { city: 'Auckland', country: 'New Zealand', tz: 'Pacific/Auckland', lat: -36.85, lon: 174.76 },
+            { city: 'Singapore', country: 'Singapore', tz: 'Asia/Singapore', lat: 1.35, lon: 103.82 },
+            { city: 'Hong Kong', country: 'China', tz: 'Asia/Hong_Kong', lat: 22.32, lon: 114.17 },
+            { city: 'Shanghai', country: 'China', tz: 'Asia/Shanghai', lat: 31.23, lon: 121.47 },
+            { city: 'Seoul', country: 'South Korea', tz: 'Asia/Seoul', lat: 37.57, lon: 126.98 },
+            { city: 'Mumbai', country: 'India', tz: 'Asia/Kolkata', lat: 19.08, lon: 72.88 },
+            { city: 'Delhi', country: 'India', tz: 'Asia/Kolkata', lat: 28.61, lon: 77.21 },
+            { city: 'Dubai', country: 'UAE', tz: 'Asia/Dubai', lat: 25.20, lon: 55.27 },
+            { city: 'Istanbul', country: 'Turkey', tz: 'Europe/Istanbul', lat: 41.01, lon: 28.98 },
+            { city: 'Moscow', country: 'Russia', tz: 'Europe/Moscow', lat: 55.76, lon: 37.62 },
+            { city: 'Cairo', country: 'Egypt', tz: 'Africa/Cairo', lat: 30.04, lon: 31.24 },
+            { city: 'Lagos', country: 'Nigeria', tz: 'Africa/Lagos', lat: 6.52, lon: 3.38 },
+            { city: 'Nairobi', country: 'Kenya', tz: 'Africa/Nairobi', lat: -1.29, lon: 36.82 },
+            { city: 'Johannesburg', country: 'South Africa', tz: 'Africa/Johannesburg', lat: -26.20, lon: 28.04 },
+            { city: 'São Paulo', country: 'Brazil', tz: 'America/Sao_Paulo', lat: -23.55, lon: -46.63 },
+            { city: 'Mexico City', country: 'Mexico', tz: 'America/Mexico_City', lat: 19.43, lon: -99.13 },
+            { city: 'Buenos Aires', country: 'Argentina', tz: 'America/Argentina/Buenos_Aires', lat: -34.60, lon: -58.38 },
+            { city: 'Chicago', country: 'United States', tz: 'America/Chicago', lat: 41.88, lon: -87.63 },
+            { city: 'Denver', country: 'United States', tz: 'America/Denver', lat: 39.74, lon: -104.99 },
+            { city: 'Phoenix', country: 'United States', tz: 'America/Phoenix', lat: 33.45, lon: -112.07 },
+            { city: 'Honolulu', country: 'United States', tz: 'Pacific/Honolulu', lat: 21.31, lon: -157.86 },
+            { city: 'Anchorage', country: 'United States', tz: 'America/Anchorage', lat: 61.22, lon: -149.90 },
+            { city: 'Toronto', country: 'Canada', tz: 'America/Toronto', lat: 43.65, lon: -79.38 },
+            { city: 'Vancouver', country: 'Canada', tz: 'America/Vancouver', lat: 49.28, lon: -123.12 },
+            { city: 'Bangkok', country: 'Thailand', tz: 'Asia/Bangkok', lat: 13.76, lon: 100.50 },
+            { city: 'Jakarta', country: 'Indonesia', tz: 'Asia/Jakarta', lat: -6.21, lon: 106.85 },
+            { city: 'Manila', country: 'Philippines', tz: 'Asia/Manila', lat: 14.60, lon: 120.98 },
+            { city: 'Taipei', country: 'Taiwan', tz: 'Asia/Taipei', lat: 25.03, lon: 121.57 },
+            { city: 'Kuala Lumpur', country: 'Malaysia', tz: 'Asia/Kuala_Lumpur', lat: 3.14, lon: 101.69 },
+            { city: 'Lisbon', country: 'Portugal', tz: 'Europe/Lisbon', lat: 38.72, lon: -9.14 },
+            { city: 'Rome', country: 'Italy', tz: 'Europe/Rome', lat: 41.90, lon: 12.50 },
+            { city: 'Amsterdam', country: 'Netherlands', tz: 'Europe/Amsterdam', lat: 52.37, lon: 4.90 },
+            { city: 'Stockholm', country: 'Sweden', tz: 'Europe/Stockholm', lat: 59.33, lon: 18.07 },
+            { city: 'Vienna', country: 'Austria', tz: 'Europe/Vienna', lat: 48.21, lon: 16.37 },
+            { city: 'Warsaw', country: 'Poland', tz: 'Europe/Warsaw', lat: 52.23, lon: 21.01 },
+            { city: 'Athens', country: 'Greece', tz: 'Europe/Athens', lat: 37.98, lon: 23.73 },
+            { city: 'Helsinki', country: 'Finland', tz: 'Europe/Helsinki', lat: 60.17, lon: 24.94 },
+            { city: 'Zurich', country: 'Switzerland', tz: 'Europe/Zurich', lat: 47.38, lon: 8.54 },
+            { city: 'Dublin', country: 'Ireland', tz: 'Europe/Dublin', lat: 53.35, lon: -6.26 },
+            { city: 'Lima', country: 'Peru', tz: 'America/Lima', lat: -12.05, lon: -77.04 },
+            { city: 'Bogota', country: 'Colombia', tz: 'America/Bogota', lat: 4.71, lon: -74.07 },
+            { city: 'Santiago', country: 'Chile', tz: 'America/Santiago', lat: -33.45, lon: -70.67 },
+            { city: 'Doha', country: 'Qatar', tz: 'Asia/Qatar', lat: 25.29, lon: 51.53 },
+            { city: 'Riyadh', country: 'Saudi Arabia', tz: 'Asia/Riyadh', lat: 24.69, lon: 46.72 },
+            { city: 'Tel Aviv', country: 'Israel', tz: 'Asia/Jerusalem', lat: 32.09, lon: 34.78 },
+        ];
+
+        // ── Default cities ──
+        const DEFAULT_CITIES = [
+            { city: 'Tokyo', country: 'Japan', tz: 'Asia/Tokyo', lat: 35.68, lon: 139.69 },
+            { city: 'Los Angeles', country: 'United States', tz: 'America/Los_Angeles', lat: 34.05, lon: -118.24 },
+            { city: 'Barcelona', country: 'Spain', tz: 'Europe/Madrid', lat: 41.39, lon: 2.17 },
+        ];
+
+        // ── WMO weather code → emoji (day/night variants) ──
+        const WMO_ICONS = {
+            0:  ['☀️', '🌙'],   // Clear
+            1:  ['🌤️', '🌙'],  // Mainly clear
+            2:  ['⛅', '☁️'],   // Partly cloudy
+            3:  ['☁️', '☁️'],   // Overcast
+            45: ['🌫️', '🌫️'], // Fog
+            48: ['🌫️', '🌫️'], // Rime fog
+            51: ['🌦️', '🌧️'], // Light drizzle
+            53: ['🌦️', '🌧️'], // Moderate drizzle
+            55: ['🌧️', '🌧️'], // Dense drizzle
+            61: ['🌧️', '🌧️'], // Slight rain
+            63: ['🌧️', '🌧️'], // Moderate rain
+            65: ['🌧️', '🌧️'], // Heavy rain
+            71: ['🌨️', '🌨️'], // Slight snow
+            73: ['🌨️', '🌨️'], // Moderate snow
+            75: ['❄️', '❄️'],   // Heavy snow
+            77: ['🌨️', '🌨️'], // Snow grains
+            80: ['🌦️', '🌧️'], // Slight showers
+            81: ['🌧️', '🌧️'], // Moderate showers
+            82: ['⛈️', '⛈️'],  // Violent showers
+            85: ['🌨️', '🌨️'], // Slight snow showers
+            86: ['❄️', '❄️'],   // Heavy snow showers
+            95: ['⛈️', '⛈️'],  // Thunderstorm
+            96: ['⛈️', '⛈️'],  // Thunderstorm + hail
+            99: ['⛈️', '⛈️'],  // Thunderstorm + heavy hail
+        };
+
+        // ── Weather cache ──
+        const weatherCache = {};
+
+        function getWeatherIcon(code, isNight) {
+            const icons = WMO_ICONS[code] || ['🌡️', '🌡️'];
+            return isNight ? icons[1] : icons[0];
+        }
+
+        async function fetchWeather(city) {
+            const lat = city.lat;
+            const lon = city.lon;
+            if (lat == null || lon == null) return null;
+
+            const key = `${lat},${lon}`;
+            const cached = weatherCache[key];
+            if (cached && Date.now() - cached.ts < 15 * 60 * 1000) return cached;
+
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,temperature_2m&timezone=auto`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const code = data?.current?.weather_code ?? null;
+                const tempC = data?.current?.temperature_2m ?? null;
+                weatherCache[key] = { code, tempC, ts: Date.now() };
+                return weatherCache[key];
+            } catch {
+                return null;
+            }
+        }
+
+        async function refreshAllWeather() {
+            for (const city of cities) {
+                await fetchWeather(city);
+            }
+            update();
+        }
+
+        // ── Temperature unit ──
+        let tempUnit = localStorage.getItem('clockwork-temp-unit') || 'C';
+
+        function toggleTempUnit() {
+            tempUnit = tempUnit === 'C' ? 'F' : 'C';
+            localStorage.setItem('clockwork-temp-unit', tempUnit);
+            updateTempToggle();
+            update();
+        }
+
+        function updateTempToggle() {
+            const el = document.getElementById('temp-toggle');
+            const isC = tempUnit === 'C';
+            el.innerHTML = `<span class="${isC ? 'active' : ''}">°C</span><span class="sep">/</span><span class="${!isC ? 'active' : ''}">°F</span>`;
+        }
+
+        function formatTemp(tempC) {
+            if (tempC == null) return '';
+            const val = tempUnit === 'F' ? (tempC * 9/5) + 32 : tempC;
+            return `${Math.round(val)}°`;
+        }
+
+        // ── State ──
+        let cities = loadCities();
+
+        function loadCities() {
+            try {
+                const saved = localStorage.getItem('clockwork-cities');
+                if (saved) return JSON.parse(saved);
+            } catch {}
+            return [...DEFAULT_CITIES];
+        }
+
+        function saveCities() {
+            localStorage.setItem('clockwork-cities', JSON.stringify(cities));
+        }
+
+        // ── Time-based theming ──
+        function getTimeTheme(hour) {
+            // hour is 0-23 in local time of that city
+            if (hour >= 22 || hour < 5) {
+                // Night
+                return {
+                    bg: 'linear-gradient(135deg, #1a1a3e, #2d2b55)',
+                    color: '#e0e0f0',
+                    icon: '\u{1F319}', // crescent moon
+                };
+            } else if (hour >= 5 && hour < 7) {
+                // Dawn
+                return {
+                    bg: 'linear-gradient(135deg, #ffecd2, #fcb69f)',
+                    color: '#5a3e28',
+                    icon: '\u{1F305}', // sunrise
+                };
+            } else if (hour >= 7 && hour < 10) {
+                // Morning
+                return {
+                    bg: 'linear-gradient(135deg, #e0f7fa, #b2ebf2)',
+                    color: '#1a4a5a',
+                    icon: '\u{26C5}', // sun behind cloud
+                };
+            } else if (hour >= 10 && hour < 14) {
+                // Midday
+                return {
+                    bg: 'linear-gradient(135deg, #fff9c4, #fff176)',
+                    color: '#5a4e1a',
+                    icon: '\u{2600}\u{FE0F}', // sun
+                };
+            } else if (hour >= 14 && hour < 17) {
+                // Afternoon
+                return {
+                    bg: 'linear-gradient(135deg, #ffe0b2, #ffcc80)',
+                    color: '#5a3e1a',
+                    icon: '\u{1F324}\u{FE0F}', // sun small cloud
+                };
+            } else if (hour >= 17 && hour < 20) {
+                // Evening
+                return {
+                    bg: 'linear-gradient(135deg, #ffab91, #ff8a65)',
+                    color: '#4a1a0a',
+                    icon: '\u{1F307}', // sunset
+                };
+            } else {
+                // Dusk (20-22)
+                return {
+                    bg: 'linear-gradient(135deg, #4a3f6b, #2d2b55)',
+                    color: '#d0c8e8',
+                    icon: '\u{1F31A}', // new moon face → use stars
+                };
+            }
+        }
+
+        // ── Rendering ──
+        function render() {
+            const container = document.getElementById('clocks');
+            container.innerHTML = '';
+
+            cities.forEach((zone, index) => {
+                const card = document.createElement('div');
+                card.className = 'clock-card';
+                card.draggable = true;
+                card.dataset.index = index;
+
+                card.addEventListener('dragstart', onDragStart);
+                card.addEventListener('dragend', onDragEnd);
+                card.addEventListener('dragover', onDragOver);
+                card.addEventListener('dragleave', onDragLeave);
+                card.addEventListener('drop', onDrop);
+
+                // Touch drag support
+                card.addEventListener('touchstart', onTouchStart, { passive: false });
+                card.addEventListener('touchmove', onTouchMove, { passive: false });
+                card.addEventListener('touchend', onTouchEnd);
+
+                card.innerHTML = `
+                    <div class="day-fill"></div>
+                    <div class="card-top">
+                        <div class="weather-row">
+                            <span class="sky-icon"></span>
+                            <span class="temp"></span>
+                        </div>
+                        <button class="remove-btn" onclick="removeCity(${index})" title="Remove">\u2715</button>
+                    </div>
+                    <div class="city-name">${zone.city}</div>
+                    <div class="country">${zone.country}</div>
+                    <div class="time"></div>
+                    <div class="date-line"></div>
+                    <div class="day-line"></div>
+                    <div class="day-type"></div>
+                    <div class="offset"></div>
+                `;
+
+                container.appendChild(card);
+            });
+
+            update();
+        }
+
+        function update() {
+            const now = new Date();
+            const cards = document.querySelectorAll('.clock-card');
+
+            cities.forEach((zone, i) => {
+                const card = cards[i];
+                if (!card) return;
+
+                const opts = { timeZone: zone.tz };
+
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    ...opts,
+                    hour: 'numeric', minute: '2-digit', second: '2-digit',
+                    hour12: true,
+                    weekday: 'long',
+                    year: 'numeric', month: 'long', day: 'numeric',
+                }).formatToParts(now);
+
+                const get = type => parts.find(p => p.type === type)?.value || '';
+
+                const hour24 = parseInt(new Intl.DateTimeFormat('en-US', {
+                    ...opts, hour: 'numeric', hour12: false
+                }).format(now));
+
+                const minuteVal = parseInt(get('minute') || '0');
+                const fractionalHour = hour24 + minuteVal / 60;
+                const fillPct = (fractionalHour / 24) * 100;
+                const fill = card.querySelector('.day-fill');
+                if (fill) {
+                    fill.style.height = fillPct + '%';
+                    const isDark = hour24 >= 20 || hour24 < 5;
+                    fill.style.setProperty('--fill-color',
+                        isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)');
+                }
+
+                const theme = getTimeTheme(hour24);
+                card.style.background = theme.bg;
+                card.style.color = theme.color;
+
+                // Weather icon + temp
+                const wKey = (zone.lat != null) ? `${zone.lat},${zone.lon}` : null;
+                const wCached = wKey ? weatherCache[wKey] : null;
+                const isNight = hour24 >= 20 || hour24 < 6;
+                if (wCached && wCached.code != null) {
+                    card.querySelector('.sky-icon').textContent = getWeatherIcon(wCached.code, isNight);
+                    card.querySelector('.temp').textContent = formatTemp(wCached.tempC);
+                } else {
+                    card.querySelector('.sky-icon').textContent = theme.icon;
+                    card.querySelector('.temp').textContent = '';
+                }
+
+                // Dark card flag for CSS overrides
+                const isDarkCard = hour24 >= 20 || hour24 < 5;
+                card.dataset.dark = isDarkCard;
+
+                const hour = get('hour');
+                const minute = get('minute');
+                const second = get('second');
+                const ampm = get('dayPeriod');
+                const weekday = get('weekday');
+                const month = get('month');
+                const day = get('day');
+                const year = get('year');
+
+                card.querySelector('.time').innerHTML =
+                    `${hour}:${minute}<span class="seconds">:${second}</span> <span class="ampm">${ampm}</span>`;
+
+                card.querySelector('.date-line').textContent = `${month} ${day}, ${year}`;
+
+                const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                const dayIndex = DAYS.indexOf(weekday);
+                const isWorkday = dayIndex >= 1 && dayIndex <= 5;
+
+                card.querySelector('.day-line').textContent = weekday;
+
+                const dayTypeEl = card.querySelector('.day-type');
+                dayTypeEl.className = `day-type ${isWorkday ? 'workday' : 'weekend'}`;
+                dayTypeEl.innerHTML = `<span class="day-type-dot"></span> ${isWorkday ? 'Workday' : 'Weekend'}`;
+
+                const tzFormatter = new Intl.DateTimeFormat('en-US', {
+                    ...opts, timeZoneName: 'longOffset',
+                });
+                const tzPart = tzFormatter.formatToParts(now).find(p => p.type === 'timeZoneName');
+                card.querySelector('.offset').textContent = tzPart?.value || '';
+            });
+        }
+
+        // ── Add / Remove ──
+        function removeCity(index) {
+            if (cities.length <= 1) return;
+            cities.splice(index, 1);
+            saveCities();
+            render();
+        }
+
+        function addCity(tz, city, country, lat, lon) {
+            if (cities.some(c => c.tz === tz && c.city === city)) return;
+            cities.push({ city, country, tz, lat, lon });
+            saveCities();
+            render();
+            closeModal();
+            fetchWeather(cities[cities.length - 1]).then(() => update());
+        }
+
+        // ── Modal ──
+        let searchTimeout = null;
+
+        function openModal() {
+            document.getElementById('modal').classList.add('open');
+            const input = document.getElementById('tz-search');
+            input.value = '';
+            showSuggestions();
+            setTimeout(() => input.focus(), 100);
+        }
+
+        function closeModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('modal').classList.remove('open');
+        }
+
+        function showSuggestions() {
+            // Show static TZ_DB when search is empty
+            renderCityList(TZ_DB);
+        }
+
+        function renderCityList(results) {
+            const list = document.getElementById('tz-list');
+            list.innerHTML = results.map(t => {
+                const alreadyAdded = cities.some(c => c.tz === t.tz && c.city === t.city);
+                const safeCity = (t.city || '').replace(/'/g, "\\'");
+                const safeCountry = (t.country || '').replace(/'/g, "\\'");
+                return `<div class="tz-item"
+                    onclick="${alreadyAdded ? '' : `addCity('${t.tz}','${safeCity}','${safeCountry}',${t.lat},${t.lon})`}"
+                    style="${alreadyAdded ? 'opacity:0.4;cursor:default' : ''}">
+                    <span>
+                        <span class="tz-city">${t.city}</span>
+                        <span class="tz-region"> · ${t.country}</span>
+                    </span>
+                    ${alreadyAdded ? '<span style="font-size:0.7rem;color:#aaa">Added</span>' : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function onSearchInput() {
+            const q = document.getElementById('tz-search').value.trim();
+            if (!q) { showSuggestions(); return; }
+
+            // Filter static list first for instant results
+            const localResults = TZ_DB.filter(t =>
+                t.city.toLowerCase().includes(q.toLowerCase()) ||
+                t.country.toLowerCase().includes(q.toLowerCase())
+            );
+            if (localResults.length) renderCityList(localResults);
+
+            // Debounce API search for anything not in static list
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => searchCities(q), 300);
+        }
+
+        async function searchCities(query) {
+            const list = document.getElementById('tz-list');
+            try {
+                const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=20&language=en`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (!data.results?.length) {
+                    // Keep local results if API found nothing
+                    const local = TZ_DB.filter(t =>
+                        t.city.toLowerCase().includes(query.toLowerCase()) ||
+                        t.country.toLowerCase().includes(query.toLowerCase())
+                    );
+                    if (!local.length) {
+                        list.innerHTML = '<div style="padding:1rem;color:#999;font-size:0.85rem">No cities found</div>';
+                    }
+                    return;
+                }
+
+                // Dedupe by timezone + city name
+                const seen = new Set();
+                const results = data.results
+                    .filter(r => r.timezone && r.name)
+                    .filter(r => {
+                        const key = `${r.timezone}|${r.name}`;
+                        if (seen.has(key)) return false;
+                        seen.add(key);
+                        return true;
+                    })
+                    .map(r => ({
+                        city: r.name,
+                        country: r.country || r.admin1 || '',
+                        tz: r.timezone,
+                        lat: r.latitude,
+                        lon: r.longitude,
+                    }));
+
+                renderCityList(results);
+            } catch {
+                // Silently fall back to local results
+            }
+        }
+
+        // ── Drag and Drop ──
+        let dragIndex = null;
+
+        function onDragStart(e) {
+            dragIndex = +e.currentTarget.dataset.index;
+            e.currentTarget.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function onDragEnd(e) {
+            e.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.clock-card').forEach(c => c.classList.remove('drag-over'));
+            dragIndex = null;
+        }
+
+        function onDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function onDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function onDrop(e) {
+            e.preventDefault();
+            const dropIndex = +e.currentTarget.dataset.index;
+            e.currentTarget.classList.remove('drag-over');
+            if (dragIndex === null || dragIndex === dropIndex) return;
+
+            const [moved] = cities.splice(dragIndex, 1);
+            cities.splice(dropIndex, 0, moved);
+            saveCities();
+            render();
+        }
+
+        // ── Touch drag (mobile) ──
+        let touchDragEl = null;
+        let touchStartY = 0;
+        let touchStartX = 0;
+
+        function onTouchStart(e) {
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            touchDragEl = e.currentTarget;
+            dragIndex = +e.currentTarget.dataset.index;
+        }
+
+        function onTouchMove(e) {
+            if (!touchDragEl) return;
+            const touch = e.touches[0];
+            const dx = Math.abs(touch.clientX - touchStartX);
+            const dy = Math.abs(touch.clientY - touchStartY);
+            if (dx > 10 || dy > 10) {
+                e.preventDefault();
+                touchDragEl.classList.add('dragging');
+            }
+        }
+
+        function onTouchEnd(e) {
+            if (!touchDragEl) return;
+            const touch = e.changedTouches[0];
+            const dropEl = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.clock-card');
+            touchDragEl.classList.remove('dragging');
+
+            if (dropEl && dropEl !== touchDragEl) {
+                const dropIndex = +dropEl.dataset.index;
+                const [moved] = cities.splice(dragIndex, 1);
+                cities.splice(dropIndex, 0, moved);
+                saveCities();
+                render();
+            }
+
+            touchDragEl = null;
+            dragIndex = null;
+        }
+
+        // ── Keyboard shortcut ──
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // ── Init ──
+        updateTempToggle();
+        render();
+        refreshAllWeather();
+        setInterval(update, 1000);
+        setInterval(refreshAllWeather, 15 * 60 * 1000); // refresh weather every 15 min
+    </script>
+</body>
+</html>
